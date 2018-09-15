@@ -1,3 +1,0 @@
-loggers:
-  octoprint.plugins.tplinksmartplug:
-    level: DEBUG

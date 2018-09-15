@@ -1,20 +1,47 @@
+---
+layout: plugin
+    
+id: wemoswitch
+title: OctoPrint-WemoSwitch
+description: Plugin to control Belkin Wemo devices from OctoPrint web interface.
+author: jneilliii
+license: AGPLv3
+
+date: 2018-09-15
+    
+homepage: https://github.com/jneilliii/OctoPrint-WemoSwitch
+source: https://github.com/jneilliii/OctoPrint-WemoSwitch
+archive: https://github.com/jneilliii/OctoPrint-WemoSwitch/archive/master.zip
+    
+follow_dependency_links: false
+    
+tags:
+- Belkin
+- Wemo
+- Smartplug
+- Power
+
+featuredimage: /assets/img/plugins/wemoswitch/screenshot_on.png
+
+---
+
 # Wemo Switch
     
 This plugin allows for the control of Belkin Wemo devices via navbar buttons and gcode commands.
 
 ## Screenshots
 
-![on](screenshot_on.png)
+![on](/assets/img/plugins/wemoswitch/screenshot_on.png)
 
-![off](screenshot_off.png)
+![off](/assets/img/plugins/wemoswitch/screenshot_off.png)
 
 ## Settings
 
-![screenshot](settings.png)
+![screenshot](/assets/img/plugins/wemoswitch/settings.png)
 
 Once installed go into settings and enter the name of your wemo device. Adjust additional settings as needed.
 
-![screenshot](settings_wemo_editor.png)
+![screenshot](/assets/img/plugins/wemoswitch/settings_wemo_editor.png)
 
 - **Device Name**
   - Name configured in the Wemo App associated with the plug.
@@ -40,7 +67,7 @@ Once installed go into settings and enter the name of your wemo device. Adjust a
   
 ## Get Help
 
-If you experience issues with this plugin or need assistance please use the issue tracker at the top of this page.
+If you experience issues with this plugin or need assistance please use the issue tracker at the plugin's Homepage linked on the right.
 
 ### Additional Plugins
 
@@ -49,7 +76,7 @@ Check out my other plugins [here](https://plugins.octoprint.org/by_author/#jneil
 ### Support My Efforts
 I, jneilliii, programmed this plugin for fun and do my best effort to support those that have issues with it, please return the favor and leave me a tip if you find this plugin helpful.
 
-[![paypal](paypal-with-text.png)](https://paypal.me/jneilliii)
+[![paypal](/assets/img/plugins/wemoswitch/paypal-with-text.png)](https://paypal.me/jneilliii)
 
 <small>No paypal.me? Send funds via PayPal to jneilliii&#64;gmail&#46;com</small>
 

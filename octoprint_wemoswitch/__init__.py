@@ -21,6 +21,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 	def __init__(self):
 		self._logger = logging.getLogger("octoprint.plugins.wemoswitch")
 		self._wemoswitch_logger = logging.getLogger("octoprint.plugins.wemoswitch.debug")
+		self.discovered_devices = []
 							
 	##~~ StartupPlugin mixin
 	
@@ -37,6 +38,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 	
 	def on_after_startup(self):
 		self._logger.info("WemoSwitch loaded!")
+		self.discovered_devices = pywemo.discover_devices()
 	
 	##~~ SettingsPlugin mixin
 	
@@ -149,39 +151,32 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			if item[key] == value: 
 				return item
 	
-	def sendCommand(self, cmd, plugip):		
-		# try to connect via ip address
-		try:
-			socket.inet_aton(plugip)
-			ip = plugip
-			self._wemoswitch_logger.debug("IP %s is valid." % plugip)
-		except socket.error:
-		# try to convert hostname to ip
-			self._wemoswitch_logger.debug("Invalid ip %s trying hostname." % plugip)
-			try:
-				ip = socket.gethostbyname(plugip)
-				self._wemoswitch_logger.debug("Hostname %s is valid." % plugip)
-			except (socket.herror, socket.gaierror):
-				self._wemoswitch_logger.debug("Invalid hostname %s." % plugip)
-				return 3
-				
-		try:
-			self._wemoswitch_logger.debug("Attempting to connect to %s" % plugip)
-			device = pywemo.discovery.device_from_description("http://%s/setup.xml" % plugip, None)			
-			
-			self._wemoswitch_logger.debug("Sending command %s to %s" % (cmd,plugip))
-			
-			if cmd == "info":
-				return device.get_state()
-			elif cmd == "on":
-				device.on()
-				return 0
-			elif cmd == "off":
-				device.off()
-				return 0
-				
-		except socket.error:
-			self._wemoswitch_logger.debug("Could not connect to %s." % plugip)
+	def sendCommand(self, cmd, plugip):	
+		device_found = False
+		
+		if len(self.discovered_devices) == 0:	
+			self._wemoswitch_logger.debug("No devices cached, discovering devices.")
+			self.discovered_devices = pywemo.discover_devices()
+			self._wemoswitch_logger.debug(self.discovered_devices)
+		
+		self._wemoswitch_logger.debug("Attempting to find %s" % plugip)
+		self._wemoswitch_logger.debug(self.discovered_devices)
+		for device in self.discovered_devices:
+			self._wemoswitch_logger.debug("%s found." % device.name)
+			if device.name == plugip:
+				device_found = True
+				self._wemoswitch_logger.debug("Sending command %s to %s" % (cmd,plugip))			
+				if cmd == "info":
+					return device.get_state()
+				elif cmd == "on":
+					device.on()
+					return 0
+				elif cmd == "off":
+					device.off()
+					return 0
+					
+		if not device_found:
+			self._wemoswitch_logger.debug("Could not find %s." % plugip)
 			return 3
 			
 	##~~ Gcode processing hook

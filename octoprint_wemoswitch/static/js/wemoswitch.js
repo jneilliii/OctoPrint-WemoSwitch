@@ -1,5 +1,5 @@
 /*
- * View model for OctoPrint-TPLinkSmartplug
+ * View model for OctoPrint-WemoSwitch
  *
  * Author: jneilliii
  * License: AGPLv3
@@ -93,7 +93,7 @@ $(function() {
 					default:
 						new PNotify({
 							title: 'Wemo Switch Error',
-							text: 'Status ' + plug.currentState() + ' for ' + plug.ip() + '. Double check IP Address\\Hostname in TPLinkSmartplug Settings.',
+							text: 'Status ' + plug.currentState() + ' for ' + plug.ip() + '. Double check Device Name in Wemo Switch Settings.',
 							type: 'error',
 							hide: true
 							});
