@@ -17,14 +17,14 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
                             octoprint.plugin.TemplatePlugin,
 							octoprint.plugin.SimpleApiPlugin,
 							octoprint.plugin.StartupPlugin):
-							
+
 	def __init__(self):
 		self._logger = logging.getLogger("octoprint.plugins.wemoswitch")
 		self._wemoswitch_logger = logging.getLogger("octoprint.plugins.wemoswitch.debug")
 		self.discovered_devices = []
-							
+
 	##~~ StartupPlugin mixin
-	
+
 	def on_startup(self, host, port):
 		# setup customized logger
 		from octoprint.logging.handlers import CleaningTimedRotatingFileHandler
@@ -35,13 +35,13 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 		self._wemoswitch_logger.addHandler(wemoswitch_logging_handler)
 		self._wemoswitch_logger.setLevel(logging.DEBUG if self._settings.get_boolean(["debug_logging"]) else logging.INFO)
 		self._wemoswitch_logger.propagate = False
-	
+
 	def on_after_startup(self):
 		self._logger.info("WemoSwitch loaded!")
 		self.discovered_devices = pywemo.discover_devices()
-	
+
 	##~~ SettingsPlugin mixin
-	
+
 	def get_settings_defaults(self):
 		return dict(
 			debug_logging = False,
@@ -49,8 +49,8 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			pollingInterval = 15,
 			pollingEnabled = False
 		)
-		
-	def on_settings_save(self, data):	
+
+	def on_settings_save(self, data):
 		old_debug_logging = self._settings.get_boolean(["debug_logging"])
 
 		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
@@ -61,16 +61,16 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 				self._wemoswitch_logger.setLevel(logging.DEBUG)
 			else:
 				self._wemoswitch_logger.setLevel(logging.INFO)
-				
+
 	def get_settings_version(self):
 		return 1
-		
+
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < self.get_settings_version():
 			# Reset plug settings to defaults.
 			self._logger.debug("Resetting arrSmartplugs for wemoswitch settings.")
 			self._settings.set(['arrSmartplugs'], self.get_settings_defaults()["arrSmartplugs"])
-		
+
 	##~~ AssetPlugin mixin
 
 	def get_assets(self):
@@ -78,21 +78,21 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			js=["js/wemoswitch.js"],
 			css=["css/wemoswitch.css"]
 		)
-		
+
 	##~~ TemplatePlugin mixin
-	
+
 	def get_template_configs(self):
 		return [
 			dict(type="navbar", custom_bindings=True),
 			dict(type="settings", custom_bindings=True)
 		]
-		
+
 	##~~ SimpleApiPlugin mixin
-	
+
 	def turn_on(self, plugip):
 		self._wemoswitch_logger.debug("Turning on %s." % plugip)
 		plug = self.plug_search(self._settings.get(["arrSmartplugs"]),"ip",plugip)
-		self._wemoswitch_logger.debug(plug)		
+		self._wemoswitch_logger.debug(plug)
 		chk = self.sendCommand("on",plugip)
 		if chk == 0:
 			self.check_status(plugip)
@@ -102,33 +102,35 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			if plug["sysCmdOn"]:
 				t = threading.Timer(int(plug["sysCmdOnDelay"]),os.system,args=[plug["sysRunCmdOn"]])
 				t.start()
-	
+
 	def turn_off(self, plugip):
 		self._wemoswitch_logger.debug("Turning off %s." % plugip)
 		plug = self.plug_search(self._settings.get(["arrSmartplugs"]),"ip",plugip)
 		self._wemoswitch_logger.debug(plug)
 		if plug["sysCmdOff"]:
 			t = threading.Timer(int(plug["sysCmdOffDelay"]),os.system,args=[plug["sysRunCmdOff"]])
-			t.start()			
+			t.start()
 		if plug["autoDisconnect"]:
 			self._printer.disconnect()
 			time.sleep(int(plug["autoDisconnectDelay"]))
 		chk = self.sendCommand("off",plugip)
 		if chk == 0:
 			self.check_status(plugip)
-		
+
 	def check_status(self, plugip):
 		self._wemoswitch_logger.debug("Checking status of %s." % plugip)
 		if plugip != "":
 			chk = self.sendCommand("info",plugip)
 			if chk == 1:
 				self._plugin_manager.send_plugin_message(self._identifier, dict(currentState="on",ip=plugip))
+			elif chk == 8:
+				self._plugin_manager.send_plugin_message(self._identifier, dict(currentState="on",ip=plugip))
 			elif chk == 0:
 				self._plugin_manager.send_plugin_message(self._identifier, dict(currentState="off",ip=plugip))
 			else:
 				self._wemoswitch_logger.debug(chk)
-				self._plugin_manager.send_plugin_message(self._identifier, dict(currentState="unknown",ip=plugip))		
-	
+				self._plugin_manager.send_plugin_message(self._identifier, dict(currentState="unknown",ip=plugip))
+
 	def get_api_commands(self):
 		return dict(turnOn=["ip"],turnOff=["ip"],checkStatus=["ip"])
 
@@ -143,53 +145,65 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			self.turn_off("{ip}".format(**data))
 		elif command == 'checkStatus':
 			self.check_status("{ip}".format(**data))
-			
+
 	##~~ Utilities
-	
+
 	def plug_search(self, list, key, value): 
 		for item in list: 
 			if item[key] == value: 
 				return item
-	
-	def sendCommand(self, cmd, plugip):	
-		device_found = False
-		
-		if len(self.discovered_devices) == 0:	
-			self._wemoswitch_logger.debug("No devices cached, discovering devices.")
-			self.discovered_devices = pywemo.discover_devices()
-			self._wemoswitch_logger.debug(self.discovered_devices)
-		
-		self._wemoswitch_logger.debug("Attempting to find %s" % plugip)
-		self._wemoswitch_logger.debug(self.discovered_devices)
-		for device in self.discovered_devices:
-			self._wemoswitch_logger.debug("%s found." % device.name)
-			if device.name == plugip:
-				device_found = True
-				self._wemoswitch_logger.debug("Sending command %s to %s" % (cmd,plugip))			
-				if cmd == "info":
-					return device.get_state()
-				elif cmd == "on":
-					device.on()
-					return 0
-				elif cmd == "off":
-					device.off()
-					return 0
-					
-		if not device_found:
-			self._wemoswitch_logger.debug("Could not find %s." % plugip)
+
+	def sendCommand(self, cmd, plugip):
+		# try to connect via ip address
+		try:
+			socket.inet_aton(plugip)
+			ip = plugip
+			self._wemoswitch_logger.debug("IP %s is valid." % plugip)
+		except socket.error:
+		# try to convert hostname to ip
+			self._wemoswitch_logger.debug("Invalid ip %s trying hostname." % plugip)
+			try:
+				ip = socket.gethostbyname(plugip)
+				self._wemoswitch_logger.debug("Hostname %s is valid." % plugip)
+			except (socket.herror, socket.gaierror):
+				self._wemoswitch_logger.debug("Invalid hostname %s." % plugip)
+				return 3
+
+		try:
+			self._wemoswitch_logger.debug("Attempting to connect to %s" % plugip)
+			port = pywemo.ouimeaux_device.probe_wemo(plugip)
+			url = 'http://%s:%s/setup.xml' % (plugip, port)
+			url = url.replace(':None','')
+			self._wemoswitch_logger.debug("Getting device info from %s" % url)
+			device = pywemo.discovery.device_from_description(url, None)
+
+			self._wemoswitch_logger.debug("Found device %s" % device)
+			self._wemoswitch_logger.debug("Sending command %s to %s" % (cmd,plugip))
+
+			if cmd == "info":
+				return device.get_state()
+			elif cmd == "on":
+				device.on()
+				return 0
+			elif cmd == "off":
+				device.off()
+				return 0
+
+		except socket.error:
+			self._wemoswitch_logger.debug("Could not connect to %s." % plugip)
 			return 3
-			
+
 	##~~ Gcode processing hook
-	
+
 	def gcode_turn_off(self, plug):
 		if plug["warnPrinting"] and self._printer.is_printing():
 			self._logger.info("Not powering off %s because printer is printing." % plug["label"])
 		else:
 			self.turn_off(plug["ip"])
-	
+
 	def processGCODE(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
 		if gcode:
-			if cmd.startswith("M80"):			
+			if cmd.startswith("M80"):
 				plugip = re.sub(r'^M80\s?', '', cmd)
 				self._wemoswitch_logger.debug("Received M80 command, attempting power on of %s." % plugip)
 				plug = self.plug_search(self._settings.get(["arrSmartplugs"]),"ip",plugip)
@@ -209,7 +223,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 				return
 			else:
 				return
-			
+
 
 	##~~ Softwareupdate hook
 
