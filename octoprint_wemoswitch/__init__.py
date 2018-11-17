@@ -223,6 +223,24 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 				return
 			else:
 				return
+		elif cmd.startswith("@WEMOON"):
+			plugip = re.sub(r'^@WEMOON\s?', '', cmd)
+			self._wemoswitch_logger.debug("Received @WEMOON command, attempting power on of %s." % plugip)
+			plug = self.plug_search(self._settings.get(["arrSmartplugs"]),"ip",plugip)
+			self._wemoswitch_logger.debug(plug)
+			if plug["gcodeEnabled"]:
+				t = threading.Timer(int(plug["gcodeOnDelay"]),self.turn_on,args=[plugip])
+				t.start()
+			return None
+		elif cmd.startswith("@WEMOOFF"):
+			plugip = re.sub(r'^@WEMOOFF\s?', '', cmd)
+			self._wemoswitch_logger.debug("Received @WEMOOFF command, attempting power off of %s." % plugip)
+			plug = self.plug_search(self._settings.get(["arrSmartplugs"]),"ip",plugip)
+			self._wemoswitch_logger.debug(plug)
+			if plug["gcodeEnabled"]:
+				t = threading.Timer(int(plug["gcodeOffDelay"]),self.gcode_turn_off,[plug])
+				t.start()
+			return None
 
 
 	##~~ Softwareupdate hook

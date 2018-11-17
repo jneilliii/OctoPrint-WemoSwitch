@@ -16,8 +16,8 @@ Once installed go into settings and enter the name of your wemo device. Adjust a
 
 ![screenshot](settings_wemo_editor.png)
 
-- **Device Name**
-  - Name configured in the Wemo App associated with the plug.
+- **IP Address**
+  - The IP address of the wemo device.
 - **Label**
   - Label to use for title attribute on hover over button in navbar.
 - **Icon Class**
@@ -26,7 +26,8 @@ Once installed go into settings and enter the name of your wemo device. Adjust a
   - The left checkbox will always warn when checked.
   - The right checkbox will only warn when printer is printing.
 - **GCODE**
-  - When checked this will enable the processing of M80 and M81 commands from gcode to power on/off plug.  Syntax for gcode command is M80/M81 followed by device name.  For example if your plug is `living_room` your gcode command would be **M80 living_room**
+  - When checked this will enable the processing of M80 and M81 commands from gcode to power on/off plug.  Syntax for gcode command is M80/M81 followed by the plug's ip address.  For example if your plug's IP address is `192.168.0.104` your gcode command would be **M80 192.168.0.104**
+  - Added with version 0.1.2 you can now use the custom action commands `@WEMOON` and `@WEMOOFF` followed by the IP address of the plug.  For example if your plug's IP address is 192.168.0.104 your gcode command would be **@WEMOON 192.168.0.104**.  This option will only work for plugs with GCODE processing enabled.
 - **postConnect**
   - Automatically connect to printer after plug is powered on.
   - Will wait for number of seconds configured in **Auto Connect Delay** setting prior to attempting connection to printer.
