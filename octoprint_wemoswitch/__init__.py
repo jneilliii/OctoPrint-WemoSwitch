@@ -212,8 +212,8 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_assets(self):
 		return dict(
-			js=["js/wemoswitch.js"],
-			css=["css/wemoswitch.css"]
+			js=["js/jquery-ui.min.js", "js/knockout-sortable.js", "js/fontawesome-iconpicker.js", "js/ko.iconpicker.js", "js/wemoswitch.js"],
+			css=["css/font-awesome.min.css", "css/font-awesome-v4-shims.min.css", "css/fontawesome-iconpicker.css", "css/wemoswitch.css"]
 		)
 
 	##~~ TemplatePlugin mixin
@@ -577,7 +577,29 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 		else:
 			self.turn_off(plug["ip"])
 
+	def processAtCommand(self, comm_instance, phase, command, parameters, tags=None, *args, **kwargs):
+		if command in ["WEMOON", "WEMOOFF"]:
+			plugip = parameters.strip()
+			self._wemoswitch_logger.debug("Received %s command, attempting power on of %s." % (command, plugip))
+			plug = self.plug_search(self._settings.get(["arrSmartplugs"]), "ip", plugip)
+			self._wemoswitch_logger.debug(plug)
+		else:
+			return None
+		if command == "WEMOON":
+			if plug["gcodeEnabled"]:
+				t = threading.Timer(int(plug["gcodeOnDelay"]), self.turn_on, args=[plugip])
+				t.start()
+			return None
+		if command == "WEMOOFF":
+			if plug["gcodeEnabled"]:
+				t = threading.Timer(int(plug["gcodeOffDelay"]), self.gcode_turn_off, args=[plug])
+				t.start()
+			return None
+
 	def processGCODE(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+		if self.powerOffWhenIdle and not (gcode in self._idleIgnoreCommandsArray):
+			self._waitForHeaters = False
+			self._reset_idle_timer()
 		if gcode:
 			if cmd.startswith("M80"):
 				plugip = re.sub(r'^M80\s?', '', cmd)
@@ -599,24 +621,6 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 				return
 			else:
 				return
-		elif cmd.startswith("@WEMOON"):
-			plugip = re.sub(r'^@WEMOON\s?', '', cmd)
-			self._wemoswitch_logger.debug("Received @WEMOON command, attempting power on of %s." % plugip)
-			plug = self.plug_search(self._settings.get(["arrSmartplugs"]), "ip", plugip)
-			self._wemoswitch_logger.debug(plug)
-			if plug["gcodeEnabled"]:
-				t = threading.Timer(int(plug["gcodeOnDelay"]), self.turn_on, args=[plugip])
-				t.start()
-			return None
-		elif cmd.startswith("@WEMOOFF"):
-			plugip = re.sub(r'^@WEMOOFF\s?', '', cmd)
-			self._wemoswitch_logger.debug("Received @WEMOOFF command, attempting power off of %s." % plugip)
-			plug = self.plug_search(self._settings.get(["arrSmartplugs"]), "ip", plugip)
-			self._wemoswitch_logger.debug(plug)
-			if plug["gcodeEnabled"]:
-				t = threading.Timer(int(plug["gcodeOffDelay"]), self.gcode_turn_off, [plug])
-				t.start()
-			return None
 
 	def check_temps(self, parsed_temps):
 		thermal_runaway_triggered = False
@@ -672,6 +676,7 @@ def __plugin_load__():
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.processGCODE,
+		"octoprint.comm.protocol.atcommand.sending": __plugin_implementation__.processAtCommand,
 		"octoprint.comm.protocol.temperatures.received": __plugin_implementation__.monitor_temperatures,
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
