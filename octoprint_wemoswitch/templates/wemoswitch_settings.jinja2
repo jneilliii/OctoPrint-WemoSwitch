@@ -9,16 +9,19 @@
 	</thead>
 	<tbody data-bind="foreach: settings.settings.plugins.wemoswitch.arrSmartplugs">
 		<tr data-bind="attr: {title: ip}">
-			<td><span data-bind="text: label" /></td>
+			<td><span data-bind="text: label"></span></td>
 			<td style="text-align:center">
-				<i class="icon" data-bind="css: {'icon-check': displayWarning(),'icon-check-empty': !displayWarning()}" title="Warning Prompt" />
-				<i class="icon" data-bind="css: {'icon-check': warnPrinting(),'icon-check-empty': !warnPrinting()}" title="Warn While Printing" />
-				<i class="icon" data-bind="css: {'icon-check': thermal_runaway(),'icon-check-empty': !thermal_runaway()}" title="Thermal Runaway" />
-				<i class="icon" data-bind="css: {'icon-check': autoConnect(),'icon-check-empty': !autoConnect()}" title="Auto Connect" />
-				<i class="icon" data-bind="css: {'icon-check': autoDisconnect(),'icon-check-empty': !autoDisconnect()}" title="Auto Disconnect" />
-				<i class="icon" data-bind="css: {'icon-check': gcodeEnabled(),'icon-check-empty': !gcodeEnabled()}" title="GCODE Trigger" />
-				<i class="icon" data-bind="css: {'icon-check': sysCmdOn(),'icon-check-empty': !sysCmdOn()}" title="Run System Command On" />
-				<i class="icon" data-bind="css: {'icon-check': sysCmdOff(),'icon-check-empty': !sysCmdOff()}" title="Run System Command Off" /></td>
+				<i class="icon" data-bind="css: {'icon-check': automaticShutdownEnabled(),'icon-check-empty': !automaticShutdownEnabled()}" title="Off on Idle"></i>
+				<i class="icon" data-bind="css: {'icon-check': event_on_startup(),'icon-check-empty': !event_on_startup()}" title="On on Startup Event"></i>
+				<i class="icon" data-bind="css: {'icon-check': event_on_upload(),'icon-check-empty': !event_on_upload()}" title="On on Upload Event"></i>
+				<i class="icon" data-bind="css: {'icon-check': displayWarning(),'icon-check-empty': !displayWarning()}" title="Warning Prompt"></i>
+				<i class="icon" data-bind="css: {'icon-check': warnPrinting(),'icon-check-empty': !warnPrinting()}" title="Warn While Printing"></i>
+				<i class="icon" data-bind="css: {'icon-check': thermal_runaway(),'icon-check-empty': !thermal_runaway()}" title="Thermal Runaway"></i>
+				<i class="icon" data-bind="css: {'icon-check': autoConnect(),'icon-check-empty': !autoConnect()}" title="Auto Connect"></i>
+				<i class="icon" data-bind="css: {'icon-check': autoDisconnect(),'icon-check-empty': !autoDisconnect()}" title="Auto Disconnect"></i>
+				<i class="icon" data-bind="css: {'icon-check': gcodeEnabled(),'icon-check-empty': !gcodeEnabled()}" title="GCODE Trigger"></i>
+				<i class="icon" data-bind="css: {'icon-check': sysCmdOn(),'icon-check-empty': !sysCmdOn()}" title="Run System Command On"></i>
+				<i class="icon" data-bind="css: {'icon-check': sysCmdOff(),'icon-check-empty': !sysCmdOff()}" title="Run System Command Off"></i></td>
 			<td style="text-align:center">
 				<div class="btn-group">
 					<a href="#" class="btn btn-mini icon-pencil" data-bind="click: $root.editPlug"></a>
@@ -29,43 +32,89 @@
 	</tbody>
 </table>
 
-<div class="control-group">
-	<div class="controls">
-		<label class="checkbox">
-		<input type="checkbox" data-bind="checked: settings.settings.plugins.wemoswitch.thermal_runaway_monitoring" /> Enable thermal runaway monitoring.
-		</label>
-	</div>
+<div class="row-fluid">
+    <div class="span6">
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.settings.plugins.wemoswitch.event_on_startup_monitoring" /> Enable startup event monitoring.
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settings.settings.plugins.wemoswitch.thermal_runaway_monitoring" /> Enable thermal runaway monitoring.
+                </label>
+                </div>
+        </div>
+        <div class="control-group" data-bind="visible: settings.settings.plugins.wemoswitch.thermal_runaway_monitoring">
+            <div class="controls">
+                <label class="control-label">{{ _('Max Bed Temp') }}</label>
+                <input type="number" min="0" class="input input-small" data-bind="value: settings.settings.plugins.wemoswitch.thermal_runaway_max_bed" />
+            </div>
+            <div class="controls">
+                <label class="control-label">{{ _('Max Extruder Temp') }}</label>
+                <input type="number" min="0" class="input input-small" data-bind="value: settings.settings.plugins.wemoswitch.thermal_runaway_max_extruder" />
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settings.settings.plugins.wemoswitch.pollingEnabled" /> Enable polling of status.
+                </label>
+            </div>
+        </div>
+        <div class="control-group" data-bind="visible: settings.settings.plugins.wemoswitch.pollingEnabled">
+            <div class="controls">
+                <label class="control-label">{{ _('Minutes between checks') }}</label>
+                <div class="input-append"><input type="number" min="0" class="input input-mini text-right" data-bind="value: settings.settings.plugins.wemoswitch.pollingInterval" /><span class="add-on">{{ _('mins') }}</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="span6">
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settings.settings.plugins.wemoswitch.event_on_upload_monitoring" /> Enable upload event monitoring.
+                </label>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                    <input type="checkbox" data-bind="checked: settings.settings.plugins.wemoswitch.powerOffWhenIdle" /> Enable power off on idle.
+                </label>
+            </div>
+        </div>
+        <div class="control-group" data-bind="visible: settings.settings.plugins.wemoswitch.powerOffWhenIdle">
+            <div class="controls">
+                <label class="control-label">{{ _('Abort Power Off Timeout') }}</label>
+                <div class="input-append"><input type="number" min="0" class="input input-mini text-right" data-bind="value: settings.settings.plugins.wemoswitch.abortTimeout" /><span class="add-on">{{ _('secs') }}</span></div>
+            </div>
+            <div class="controls">
+                <label class="control-label">{{ _('Idle Timeout') }}</label>
+                <div class="input-append"><input type="number" min="0" class="input input-mini text-right" data-bind="value: settings.settings.plugins.wemoswitch.idleTimeout" /><span class="add-on">{{ _('mins') }}</span></div>
+            </div>
+            <div class="controls">
+                <label class="control-label">{{ _('Idle Target Temperature') }}</label>
+                <div class="input-append"><input type="number" min="0" class="input input-mini text-right" data-bind="value: settings.settings.plugins.wemoswitch.idleTimeoutWaitTemp" /><span class="add-on">{{ _('degs') }}</span></div>
+            </div>
+            <div class="controls">
+                <label class="control-label">{{ _('GCode Commands to Ignore for Idle') }}</label>
+                <input type="text" class="input-block-level" title="Comma separated list of GCode commands" data-bind="value: settings.settings.plugins.wemoswitch.idleIgnoreCommands" />
+            </div>
+        </div>
+    </div>
 </div>
-<div class="control-group" data-bind="visible: settings.settings.plugins.wemoswitch.thermal_runaway_monitoring">
-	<div class="controls">
-		<label class="control-label">{{ _('Max Bed Temp') }}</label>
-		<input type="number" min="0" class="input input-small" data-bind="value: settings.settings.plugins.wemoswitch.thermal_runaway_max_bed" />
-	</div>
-	<div class="controls">
-		<label class="control-label">{{ _('Max Extruder Temp') }}</label>
-		<input type="number" min="0" class="input input-small" data-bind="value: settings.settings.plugins.wemoswitch.thermal_runaway_max_extruder" />
-	</div>
-</div>
-
-<div class="control-group">
-	<div class="controls">
-		<label class="checkbox">
-		<input type="checkbox" data-bind="checked: settings.settings.plugins.wemoswitch.debug_logging"> Enable debug logging.
-		</label>
-	</div>
-</div>
-<div class="control-group">
-	<div class="controls">
-		<label class="checkbox">
-		<input type="checkbox" data-bind="checked: settings.settings.plugins.wemoswitch.pollingEnabled" /> Enable polling of status.
-		</label>
-	</div>
-</div>
-<div class="control-group" data-bind="visible: settings.settings.plugins.wemoswitch.pollingEnabled">
-	<div class="controls">
-		<label class="control-label">{{ _('Minutes between checks') }}</label>
-		<input type="number" min="0" data-bind="value: settings.settings.plugins.wemoswitch.pollingInterval" />
-	</div>
+<div class="row-fluid">
+    <div class="control-group">
+        <div class="controls">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.settings.plugins.wemoswitch.debug_logging"> Enable debug logging.
+            </label>
+        </div>
+    </div>
 </div>
 
 <div id="WemoSwitchEditor" data-bind="with: selectedPlug" class="modal hide fade">
@@ -76,14 +125,19 @@
 	<div class="modal-body">
 		<table class="table table-condensed">
 			<tr>
-				<td><div class="controls"><label class="control-label">{{ _('IP Address') }}</label><input type="text" class="input-block-level" data-bind="value: ip" /><div></td>
+				<td><div class="controls"><label class="control-label">{{ _('IP Address') }}</label><input type="text" class="input-block-level" data-bind="value: ip" /></div></td>
+				<td><div class="controls"><label class="control-label">{{ _('Icon Class') }}</label><input type="text" class="input-block-level" data-bind="value: icon, iconpicker: icon, iconpickerOptions: {hideOnSelect: true, collision: true}" /></div></td>
 				<td><div class="controls"><label class="control-label">{{ _('Label') }}</label><input type="text" class="input input-small" data-bind="value: label" /></div></td>
-				<td><div class="controls"><label class="control-label"><a href="http://fontawesome.io/3.2.1/cheatsheet/" target="_blank">{{ _('Icon Class') }}</a></label><input type="text" class="input-block-level" data-bind="value: icon" /><div></td>
+			</tr>
+			<tr>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: automaticShutdownEnabled, enable: $root.settings.settings.plugins.wemoswitch.powerOffWhenIdle" disabled/> Off on Idle</label></div></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_startup, enable: $root.settings.settings.plugins.wemoswitch.event_on_startup_monitoring" disabled/> On on Startup</label></div></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_upload, enable: $root.settings.settings.plugins.wemoswitch.event_on_upload_monitoring" disabled/> On on Upload</label></div></td>
 			</tr>
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: displayWarning"/> Warning Prompt</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: warnPrinting"/> Warn While Printing</label></div></td>
-				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: thermal_runaway"/> Thermal Runaway</label></div></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: thermal_runaway, enable: $root.settings.settings.plugins.wemoswitch.thermal_runaway_monitoring" disabled/> Thermal Runaway</label></div></td>
 			</tr>
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: autoConnect"/> Auto Connect</label><input type="text" data-bind="value: autoConnectDelay,visible: autoConnect" class="input input-small" /></div></td>
@@ -100,16 +154,16 @@
 				<td></td>
 			</tr>
 			<tr>
-				<td colspan="2" style="vertical-align: bottom"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOn"/> Run System Command After On</label><input type="text" data-bind="value: sysRunCmdOn,visible: sysCmdOn" class="input-block-level" /></div></td>
-				<td style="vertical-align: bottom"><div class="controls" data-bind="visible: sysRunCmdOn"><label class="control-label">{{ _('Delay') }}</label><input type="text" data-bind="value: sysCmdOnDelay"  class="input input-small" /></div></td>
+				<td colspan="2" style="vertical-align: bottom"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOn"/> Run System Command After On</label><input type="text" data-bind="textInput: sysRunCmdOn,visible: sysCmdOn" class="input-block-level" /></div></td>
+				<td style="vertical-align: bottom; padding-bottom: 9px;"><div class="controls" data-bind="visible: sysCmdOn() && sysRunCmdOn().length > 0"><label class="control-label">{{ _('Delay') }}</label><div class="input-append"><input type="text" data-bind="value: sysCmdOnDelay"  class="input input-mini text-right" /><span class="add-on">{{ _('secs') }}</span></div></div></td>
 			</tr>
 			<tr>
-				<td colspan="2" style="vertical-align: bottom"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOff"/> Run System Command Before Off</label><input type="text" data-bind="value: sysRunCmdOff,visible: sysCmdOff" class="input-block-level" /></div></td>
-				<td style="vertical-align: bottom"><div class="controls" data-bind="visible: sysRunCmdOff"><label class="control-label">{{ _('Delay') }}</label><input type="text" data-bind="value: sysCmdOffDelay"  class="input input-small" /></div></td>
+				<td colspan="2" style="vertical-align: bottom"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOff"/> Run System Command Before Off</label><input type="text" data-bind="textInput: sysRunCmdOff,visible: sysCmdOff" class="input-block-level" /></div></td>
+				<td style="vertical-align: bottom; padding-bottom: 9px;"><div class="controls" data-bind="visible: sysCmdOff() && sysRunCmdOff().length > 0"><label class="control-label">{{ _('Delay') }}<div class="input-append"><input type="text" data-bind="value: sysCmdOffDelay"  class="input input-mini text-right" /><span class="add-on">{{ _('secs') }}</span></div></label></div></td>
 			</tr>
 		</table>
 	</div>
 	<div class="modal-footer">
-		<a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
+		<small>Make sure to click save in the main settings after making changes here.</small> <a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
 	</div>
 </div>

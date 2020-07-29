@@ -1,5 +1,5 @@
 # Wemo Switch
-    
+
 This plugin allows for the control of Belkin Wemo devices via navbar buttons and gcode commands.
 
 ## Screenshots
@@ -14,31 +14,34 @@ This plugin allows for the control of Belkin Wemo devices via navbar buttons and
 
 Once installed go into settings and enter the name of your wemo device. Adjust additional settings as needed.
 
+- **Enable startup event monitoring**: will power on enabled wemos when OctoPrint starts up after boot.
+- **Enable upload event monitoring**: will power on enabled wemos when a file is uploaded with the start print on upload setting enabled (requires OctoPrint 1.4.1).
+- **Enable thermal runaway monitoring**: will power off enabled wemos at set max temperatures.
+- **Enable power off on idle**: will power off enabled wemos using following parameters.
+  - Abort Power Off Timeout: a prompt will displayed in the UI to allow aborting idle power off for this period of time.
+  - Idle Timeout: amount of time to wait before automatic power off of enabled wemos begins. Waits for timelapses to complete and for all temperatures to be below configured `Idle Target Temperature`.
+  - Idle Target Temperature: temperature threshold to be below prior to starting idle timeout.
+  - GCode Commands to Ignore for Idle: commands to be ignored for determining idle state.
+- **Enable polling of status**: when enabled and while the UI is open the current state of all wemos will be checked at set interval.
+- **Enable debug logging**: enables `plugin_wemoswitch_debug.log` file in OctoPrint's logging section for troubleshooting purposes.
+
 ![screenshot](settings_wemo_editor.png)
 
-- **IP Address**
-  - The IP address of the wemo device.
-- **Label**
-  - Label to use for title attribute on hover over button in navbar.
-- **Icon Class**
-  - Class name from [fontawesome](http://fontawesome.io/3.2.1/cheatsheet/) to use for icon on button.
-- **Warn**
-  - The left checkbox will always warn when checked.
-  - The right checkbox will only warn when printer is printing.
-- **GCODE**
-  - When checked this will enable the processing of M80 and M81 commands from gcode to power on/off plug.  Syntax for gcode command is M80/M81 followed by the plug's ip address.  For example if your plug's IP address is `192.168.0.104` your gcode command would be **M80 192.168.0.104**
-  - Added with version 0.1.2 you can now use the custom action commands `@WEMOON` and `@WEMOOFF` followed by the IP address of the plug.  For example if your plug's IP address is 192.168.0.104 your gcode command would be **@WEMOON 192.168.0.104**.  This option will only work for plugs with GCODE processing enabled.
-- **postConnect**
-  - Automatically connect to printer after plug is powered on.
-  - Will wait for number of seconds configured in **Auto Connect Delay** setting prior to attempting connection to printer.
-- **preDisconnect**
-  - Automatically disconnect printer prior to powering off the plug.
-  - Will wait for number of seconds configured in **Auto Disconnect Delay** prior to powering off the plug.
-- **Cmd On**
-  - When checked will run system command configured in **System Command On** setting after a delay in seconds configured in **System Command On Delay**.
-- **Cmd Off**
-  - When checked will run system command configured in **System Command Off** setting after a delay in seconds configured in **System Command Off Delay**.
-  
+- **IP Address**: IP address of the wemo device.
+- **Icon Class**: class name from [fontawesome](http://fontawesome.io/3.2.1/cheatsheet/) to use for icon on button.
+- **Label**: label to use for title attribute on hover over button in navbar.
+- **Off on Idle**: power off wemo on idle timeout. Requires `Enable power off on idle` setting to be enabled.
+- **On on Startup**: power on with OctoPrint startup. Requires `Enable startup event monitoring` setting to be enabled.
+- **On on Upload**: power on when file is uploaded and flagged to auto start printing. Requires `Enable upload event monitoring` setting to be enabled and OctoPrint 1.4.1.
+- **Warning Prompt**: confirmation prompt will always display when powering off a wemo from the navbar.
+- **Warn While Printing**: confirmation prompt will display while printing when powering off a wemo from the navbar. Enabling this will also prevent gcode processing from powering off the wemo while printing unless a sufficient `GCODE Off Delay` is entered.
+- **Thermal Runaway**: when enabled will power off wemo when main temperature thresholds are exceeded.
+- **Auto Connect**: power on wemo and then automatically connect to printer after configured delay in seconds.
+- **Auto Disconnect**: automatically disconnect printer and then power off the wemo after configured delay in seconds.
+- **GCODE Trigger**: enable the processing of `M80`, `M81`, `@WEMOON`, and `@WEMOOFF` GCODE commands using configured delays. Syntax for gcode command is `M80`/`M81`/`@WEMOON`/`@WEMOOFF` followed by the wemo's ip address.  For example if your wemo's IP address is `192.168.0.104` your gcode command might be **@WEMOOFF 192.168.0.104**.
+- **Run System Command After On**: power on wemo and run configured system command after configured delay in seconds.
+- **Run System Command Before Off**: run configured system command and then power off the wemo after configured delay in seconds.
+
 ## Get Help
 
 If you experience issues with this plugin or need assistance please use the issue tracker by clicking issues above.
