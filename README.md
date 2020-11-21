@@ -42,6 +42,19 @@ Once installed go into settings and enter the name of your wemo device. Adjust a
 - **Run System Command After On**: power on wemo and run configured system command after configured delay in seconds.
 - **Run System Command Before Off**: run configured system command and then power off the wemo after configured delay in seconds.
 
+## Most recent changelog
+
+**[0.1.8](https://github.com/jneilliii/OctoPrint-WemoSwitch/releases/tag/0.1.8)** (11/21/2020)
+
+**Added**
+* release channels for OctoPrint 1.5.0+ for future rc testing, similar to OctoPrint as described [here](https://community.octoprint.org/t/how-to-use-the-release-channels-to-help-test-release-candidates/402)
+
+**Updated**
+* knockout sortable library for OctoPrint 1.5.0 compatibility
+
+
+### [All releases](https://github.com/jneilliii/OctoPrint-WemoSwitch/releases)
+
 ## Get Help
 
 If you experience issues with this plugin or need assistance please use the issue tracker by clicking issues above.
@@ -59,6 +72,7 @@ Check out my other plugins [here](https://plugins.octoprint.org/by_author/#jneil
 - @tideline3d
 - [SimplyPrint](https://simplyprint.dk/)
 - [Andrew Beeman](https://github.com/Kiendeleo)
+- [Calanish](https://github.com/calanish)
 
 ### Support My Efforts
 I, jneilliii, programmed this plugin for fun and do my best effort to support those that have issues with it, please return the favor and leave me a tip or become a Patron if you find this plugin helpful and want me to continue future development.
