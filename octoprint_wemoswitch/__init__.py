@@ -109,7 +109,15 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 	def on_after_startup(self):
 		self._logger.info("WemoSwitch loaded!")
+
+		self._logger.debug("Discovering devices")
 		self.discovered_devices = pywemo.discover_devices()
+
+		if self.discovered_devices:
+			for d in self.get_discovered_devices():
+				self._wemoswitch_logger.debug("Device %s: %s" % d)
+		else:
+			self._wemoswitch_logger.debug("No discovered devices on network")
 
 		self.abortTimeout = self._settings.get_int(["abortTimeout"])
 		self._wemoswitch_logger.debug("abortTimeout: %s" % self.abortTimeout)
@@ -131,6 +139,43 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 		self._reset_idle_timer()
 
 	##~~ SettingsPlugin mixin
+
+	def get_discovered_device(self, index, as_text=False, as_addr=False):
+		"""
+		returns a specific device from the list of discovered devices.
+		:param index:  the device offset in the devices list.
+		:param as_text: If true, returns a string like "Device Name (192.168.1.123:46555) [S/N: abddef123]"
+		:param as_addr: If true, returns a string with the IP address/port number.
+		:return: Otherwise returns the device object.
+		"""
+		tmp_ret = self.discovered_devices[index]
+		if as_addr:
+			return f'{tmp_ret.host}:{tmp_ret.port}'
+		elif as_text:
+			return f'{tmp_ret.name} ({tmp_ret.host}:{tmp_ret.port}) [S/N: {tmp_ret.serialnumber}]'
+		else:
+			return tmp_ret
+
+	def get_discovered_devices(self, as_choice=True, as_text=False):
+		"""
+		Returns a (probably) modified list of the devices.
+		:param as_choice: returns a list of tuples like (<index number>, 'device name (92.168.1.123:64555) [S/N abcde123]")  These
+			are intended to be used a a lookup list in a dropdown.
+		:param as_text: returns a list of strings as above without the index ID, this can bve used for dumping to a log.
+		:return:
+		if both are False, this returns the list of objects.
+		"""
+		if not as_text and not as_choice:
+			return self.discovered_devices
+
+		tmp_ret = []
+		for index in range(len(self.discovered_devices)):
+			d = self.get_discovered_device(as_text=as_choice or as_text)
+			if as_choice:
+				tmp_ret.append((index, tmp_ret))
+			else:
+				tmp_ret.append(tmp_ret)
+		return tmp_ret
 
 	def get_settings_defaults(self):
 		return dict(
@@ -532,10 +577,15 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 	def sendCommand(self, cmd, plugip):
 		# try to connect via ip address
 		try:
+			if ':' in plugip:
+				port, plugip = plugip.split(':', maxsplit=1)
+			else:
+				port = None
 			socket.inet_aton(plugip)
 			ip = plugip
+			port = int(port)
 			self._wemoswitch_logger.debug("IP %s is valid." % plugip)
-		except socket.error:
+		except socket.error or ValueError:
 			# try to convert hostname to ip
 			self._wemoswitch_logger.debug("Invalid ip %s trying hostname." % plugip)
 			try:
@@ -547,7 +597,8 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 		try:
 			self._wemoswitch_logger.debug("Attempting to connect to %s" % plugip)
-			port = pywemo.ouimeaux_device.probe_wemo(plugip)
+			if port is None:
+				port = pywemo.ouimeaux_device.probe_wemo(plugip)
 			url = 'http://%s:%s/setup.xml' % (plugip, port)
 			url = url.replace(':None', '')
 			self._wemoswitch_logger.debug("Getting device info from %s" % url)
