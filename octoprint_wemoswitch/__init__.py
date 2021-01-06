@@ -170,7 +170,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 		tmp_ret = []
 		for index in range(len(self.discovered_devices)):
-			d = self.get_discovered_device(as_text=as_choice or as_text)
+			d = self.get_discovered_device(index, as_text=as_choice or as_text)
 			if as_choice:
 				tmp_ret.append((index, tmp_ret))
 			else:
