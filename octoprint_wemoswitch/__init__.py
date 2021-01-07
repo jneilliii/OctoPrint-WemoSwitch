@@ -2,7 +2,8 @@
 from __future__ import absolute_import
 
 import octoprint.plugin
-from octoprint.server import user_permission
+from octoprint.access.permissions import Permissions, ADMIN_GROUP, USER_GROUP
+from flask_babel import gettext
 from octoprint.events import eventManager, Events
 from octoprint.util import RepeatedTimer
 import socket
@@ -140,41 +141,17 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 	##~~ SettingsPlugin mixin
 
-	def get_discovered_device(self, index, as_text=False, as_addr=False):
-		"""
-		returns a specific device from the list of discovered devices.
-		:param index:  the device offset in the devices list.
-		:param as_text: If true, returns a string like "Device Name (192.168.1.123:46555) [S/N: abddef123]"
-		:param as_addr: If true, returns a string with the IP address/port number.
-		:return: Otherwise returns the device object.
-		"""
+	def get_discovered_device(self, index):
 		tmp_ret = self.discovered_devices[index]
-		if as_addr:
-			return f'{tmp_ret.host}:{tmp_ret.port}'
-		elif as_text:
-			return f'{tmp_ret.name} ({tmp_ret.host}:{tmp_ret.port}) [S/N: {tmp_ret.serialnumber}]'
-		else:
-			return tmp_ret
+		return {"label": tmp_ret.name,
+				"ip": "{}:{}".format(tmp_ret.host, tmp_ret.port),
+				"sn": tmp_ret.serialnumber}
 
-	def get_discovered_devices(self, as_choice=True, as_text=False):
-		"""
-		Returns a (probably) modified list of the devices.
-		:param as_choice: returns a list of tuples like (<index number>, 'device name (92.168.1.123:64555) [S/N abcde123]")  These
-			are intended to be used a a lookup list in a dropdown.
-		:param as_text: returns a list of strings as above without the index ID, this can bve used for dumping to a log.
-		:return:
-		if both are False, this returns the list of objects.
-		"""
-		if not as_text and not as_choice:
-			return self.discovered_devices
-
+	def get_discovered_devices(self):
 		tmp_ret = []
 		for index in range(len(self.discovered_devices)):
-			d = self.get_discovered_device(index, as_text=as_choice or as_text)
-			if as_choice:
-				tmp_ret.append((index, tmp_ret))
-			else:
-				tmp_ret.append(tmp_ret)
+			d = self.get_discovered_device(index)
+			tmp_ret.append(d)
 		return tmp_ret
 
 	def get_settings_defaults(self):
@@ -194,6 +171,16 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			event_on_upload_monitoring=False,
 			event_on_startup_monitoring=False
 		)
+
+	def on_settings_load(self):
+		data = {}
+		for key in self.get_settings_defaults():
+			data[key] = self._settings.get([key])
+		if "discovered_devices" in data:
+			del data["discovered_devices"]
+
+		data["discovered_devices"] = self.get_discovered_devices()
+		return data
 
 	def on_settings_save(self, data):
 		old_debug_logging = self._settings.get_boolean(["debug_logging"])
@@ -325,7 +312,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 					abortAutomaticShutdown=[])
 
 	def on_api_command(self, command, data):
-		if not user_permission.can():
+		if not Permissions.PLUGIN_WEMOSWITCH_CONTROL.can():
 			return flask.make_response("Insufficient rights", 403)
 
 		if command == 'turnOn':
@@ -578,7 +565,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 		# try to connect via ip address
 		try:
 			if ':' in plugip:
-				port, plugip = plugip.split(':', maxsplit=1)
+				plugip, port = plugip.split(':', maxsplit=1)
 			else:
 				port = None
 			socket.inet_aton(plugip)
@@ -619,6 +606,18 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 		except socket.error:
 			self._wemoswitch_logger.debug("Could not connect to %s." % plugip)
 			return 3
+
+	##~~ Access Permissions Hook
+
+	def get_additional_permissions(self, *args, **kwargs):
+		return [
+			dict(key="CONTROL",
+				 name="Control Plugs",
+				 description=gettext("Allows control of configured plugs."),
+				 roles=["admin"],
+				 dangerous=True,
+				 default_groups=[ADMIN_GROUP])
+		]
 
 	##~~ Gcode processing hook
 
@@ -739,5 +738,6 @@ def __plugin_load__():
 		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.processGCODE,
 		"octoprint.comm.protocol.atcommand.sending": __plugin_implementation__.processAtCommand,
 		"octoprint.comm.protocol.temperatures.received": __plugin_implementation__.monitor_temperatures,
+		"octoprint.access.permissions": __plugin_implementation__.get_additional_permissions,
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
