@@ -2,6 +2,10 @@
 
 This plugin allows for the control of Belkin Wemo devices via navbar buttons and gcode commands.
 
+## Firmware Warning
+
+Starting in May of 2020, Belkin started requiring users to create an account and login to the app (Android app version 1.25). In addition to the account, most of the app functionality now requires a connection to the cloud (internet access), even for simple actions such as toggling a switch. All of the commands that go through the cloud are encrypted and cannot be easily inspected. This raises the possibility that Belkin could, in the future, update Wemo device firmware and make breaking API changes that can not longer be deciphered. If this happens, pywemo (dependency of this plugin) may no longer function on that device rendering this plugin useless. It would be prudent to upgrade firmware cautiously and preferably only after confirming that breaking API changes have not been introduced.
+
 ## Screenshots
 
 ![on](screenshot_on.png)
@@ -44,14 +48,12 @@ Once installed go into settings and enter the name of your wemo device. Adjust a
 
 ## Most recent changelog
 
-**[0.1.8](https://github.com/jneilliii/OctoPrint-WemoSwitch/releases/tag/0.1.8)** (11/21/2020)
+### [0.1.9](https://github.com/jneilliii/OctoPrint-WemoSwitch/releases/tag/0.1.9) (01/07/2021)
 
 **Added**
-* release channels for OctoPrint 1.5.0+ for future rc testing, similar to OctoPrint as described [here](https://community.octoprint.org/t/how-to-use-the-release-channels-to-help-test-release-candidates/402)
-
-**Updated**
-* knockout sortable library for OctoPrint 1.5.0 compatibility
-
+* device discovery for easier addition of devices, may not work in all networks
+* ip can now include a port in the format ip:port, ie 192.168.0.107:49153
+* access permissions now included as `Wemo Switch: Control Plugs` for API
 
 ### [All releases](https://github.com/jneilliii/OctoPrint-WemoSwitch/releases)
 

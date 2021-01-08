@@ -2,7 +2,8 @@
 from __future__ import absolute_import
 
 import octoprint.plugin
-from octoprint.server import user_permission
+from octoprint.access.permissions import Permissions, ADMIN_GROUP, USER_GROUP
+from flask_babel import gettext
 from octoprint.events import eventManager, Events
 from octoprint.util import RepeatedTimer
 import socket
@@ -109,7 +110,15 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 	def on_after_startup(self):
 		self._logger.info("WemoSwitch loaded!")
+
+		self._logger.debug("Discovering devices")
 		self.discovered_devices = pywemo.discover_devices()
+
+		if self.discovered_devices:
+			for d in self.get_discovered_devices():
+				self._wemoswitch_logger.debug("Device %s: %s" % d)
+		else:
+			self._wemoswitch_logger.debug("No discovered devices on network")
 
 		self.abortTimeout = self._settings.get_int(["abortTimeout"])
 		self._wemoswitch_logger.debug("abortTimeout: %s" % self.abortTimeout)
@@ -132,6 +141,19 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 	##~~ SettingsPlugin mixin
 
+	def get_discovered_device(self, index):
+		tmp_ret = self.discovered_devices[index]
+		return {"label": tmp_ret.name,
+				"ip": "{}:{}".format(tmp_ret.host, tmp_ret.port),
+				"sn": tmp_ret.serialnumber}
+
+	def get_discovered_devices(self):
+		tmp_ret = []
+		for index in range(len(self.discovered_devices)):
+			d = self.get_discovered_device(index)
+			tmp_ret.append(d)
+		return tmp_ret
+
 	def get_settings_defaults(self):
 		return dict(
 			debug_logging=False,
@@ -149,6 +171,16 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			event_on_upload_monitoring=False,
 			event_on_startup_monitoring=False
 		)
+
+	def on_settings_load(self):
+		data = {}
+		for key in self.get_settings_defaults():
+			data[key] = self._settings.get([key])
+		if "discovered_devices" in data:
+			del data["discovered_devices"]
+
+		data["discovered_devices"] = self.get_discovered_devices()
+		return data
 
 	def on_settings_save(self, data):
 		old_debug_logging = self._settings.get_boolean(["debug_logging"])
@@ -280,7 +312,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 					abortAutomaticShutdown=[])
 
 	def on_api_command(self, command, data):
-		if not user_permission.can():
+		if not Permissions.PLUGIN_WEMOSWITCH_CONTROL.can():
 			return flask.make_response("Insufficient rights", 403)
 
 		if command == 'turnOn':
@@ -532,10 +564,15 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 	def sendCommand(self, cmd, plugip):
 		# try to connect via ip address
 		try:
+			if ':' in plugip:
+				plugip, port = plugip.split(':', maxsplit=1)
+			else:
+				port = None
 			socket.inet_aton(plugip)
 			ip = plugip
+			port = int(port)
 			self._wemoswitch_logger.debug("IP %s is valid." % plugip)
-		except socket.error:
+		except socket.error or ValueError:
 			# try to convert hostname to ip
 			self._wemoswitch_logger.debug("Invalid ip %s trying hostname." % plugip)
 			try:
@@ -547,7 +584,8 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 		try:
 			self._wemoswitch_logger.debug("Attempting to connect to %s" % plugip)
-			port = pywemo.ouimeaux_device.probe_wemo(plugip)
+			if port is None:
+				port = pywemo.ouimeaux_device.probe_wemo(plugip)
 			url = 'http://%s:%s/setup.xml' % (plugip, port)
 			url = url.replace(':None', '')
 			self._wemoswitch_logger.debug("Getting device info from %s" % url)
@@ -568,6 +606,18 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 		except socket.error:
 			self._wemoswitch_logger.debug("Could not connect to %s." % plugip)
 			return 3
+
+	##~~ Access Permissions Hook
+
+	def get_additional_permissions(self, *args, **kwargs):
+		return [
+			dict(key="CONTROL",
+				 name="Control Plugs",
+				 description=gettext("Allows control of configured plugs."),
+				 roles=["admin"],
+				 dangerous=True,
+				 default_groups=[ADMIN_GROUP])
+		]
 
 	##~~ Gcode processing hook
 
@@ -688,5 +738,6 @@ def __plugin_load__():
 		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.processGCODE,
 		"octoprint.comm.protocol.atcommand.sending": __plugin_implementation__.processAtCommand,
 		"octoprint.comm.protocol.temperatures.received": __plugin_implementation__.monitor_temperatures,
+		"octoprint.access.permissions": __plugin_implementation__.get_additional_permissions,
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}

@@ -124,10 +124,21 @@
 	</div>
 	<div class="modal-body">
 		<table class="table table-condensed">
+            <tr>
+                <td colspan="3">
+                    <div class="controls">
+                        <select class="input-block-level" data-bind="options: $root.settings.settings.plugins.wemoswitch.discovered_devices, optionsText: function(item){return item.label() + ' (' + item.ip() + ') SN: ' + item.sn()}, optionsCaption: gettext('Choose Discovered Device or Manually Enter Details Below...'), value: $root.selected_discovered_device, event: {change: $root.use_discovered}"></select>
+                    </div>
+                </td>
+            </tr>
 			<tr>
-				<td><div class="controls"><label class="control-label">{{ _('IP Address') }}</label><input type="text" class="input-block-level" data-bind="value: ip" /></div></td>
+				<td>
+                    <div class="controls">
+                        <label class="control-label">{{ _('IP Address') }}</label><input type="text" class="input-block-level" data-bind="value: ip" />
+                    </div>
+                </td>
 				<td><div class="controls"><label class="control-label">{{ _('Icon Class') }}</label><input type="text" class="input-block-level" data-bind="value: icon, iconpicker: icon, iconpickerOptions: {hideOnSelect: true, collision: true}" /></div></td>
-				<td><div class="controls"><label class="control-label">{{ _('Label') }}</label><input type="text" class="input input-small" data-bind="value: label" /></div></td>
+				<td><div class="controls"><label class="control-label">{{ _('Label') }}</label><input type="text" class="input-block-level" data-bind="value: label" /></div></td>
 			</tr>
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: automaticShutdownEnabled, enable: $root.settings.settings.plugins.wemoswitch.powerOffWhenIdle" disabled/> Off on Idle</label></div></td>

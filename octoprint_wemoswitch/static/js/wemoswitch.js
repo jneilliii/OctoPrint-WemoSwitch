@@ -14,6 +14,7 @@ $(function() {
 		self.arrSmartplugs = ko.observableArray();
 		self.isPrinting = ko.observable(false);
 		self.selectedPlug = ko.observable();
+		self.selected_discovered_device = ko.observable();
 		self.processing = ko.observableArray([]);
 		self.powerOffWhenIdle = ko.observable(false);
 		self.show_sidebar = ko.pureComputed(function(){
@@ -130,10 +131,17 @@ $(function() {
 			$("#WemoSwitchEditor").modal("show");
 		}
 
+		self.use_discovered = function(data) {
+		    if(self.selected_discovered_device()) {
+                data.ip(self.selected_discovered_device().ip());
+                data.label(self.selected_discovered_device().label());
+            }
+        }
+
 		self.addPlug = function() {
 			self.selectedPlug({'ip':ko.observable(''),
                                 'label':ko.observable(''),
-                                'icon':ko.observable('icon-bolt'),
+                                'icon':ko.observable('fas fa-bolt'),
                                 'displayWarning':ko.observable(true),
                                 'warnPrinting':ko.observable(false),
                                 'thermal_runaway':ko.observable(false),
