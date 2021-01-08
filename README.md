@@ -51,7 +51,9 @@ Once installed go into settings and enter the name of your wemo device. Adjust a
 ### [0.1.9](https://github.com/jneilliii/OctoPrint-WemoSwitch/releases/tag/0.1.9) (01/07/2021)
 
 **Added**
-* device discovery for easier addition of devices, may not work in all networks.
+* device discovery for easier addition of devices, may not work in all networks
+* ip can now include a port in the format ip:port, ie 192.168.0.107:49153
+* access permissions now included as `Wemo Switch: Control Plugs` for API
 
 ### [All releases](https://github.com/jneilliii/OctoPrint-WemoSwitch/releases)
 
