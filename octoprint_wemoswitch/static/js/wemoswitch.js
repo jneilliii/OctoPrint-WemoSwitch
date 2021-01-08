@@ -141,7 +141,7 @@ $(function() {
 		self.addPlug = function() {
 			self.selectedPlug({'ip':ko.observable(''),
                                 'label':ko.observable(''),
-                                'icon':ko.observable('fas fa-bolt'),
+                                'icon':ko.observable('icon-bolt'),
                                 'displayWarning':ko.observable(true),
                                 'warnPrinting':ko.observable(false),
                                 'thermal_runaway':ko.observable(false),

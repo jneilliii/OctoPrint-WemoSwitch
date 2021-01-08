@@ -563,20 +563,18 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 	def sendCommand(self, cmd, plugip):
 		# try to connect via ip address
+		port = None
 		try:
 			if ':' in plugip:
 				plugip, port = plugip.split(':', maxsplit=1)
-			else:
-				port = None
+				port = int(port)
 			socket.inet_aton(plugip)
-			ip = plugip
-			port = int(port)
 			self._wemoswitch_logger.debug("IP %s is valid." % plugip)
 		except socket.error or ValueError:
 			# try to convert hostname to ip
 			self._wemoswitch_logger.debug("Invalid ip %s trying hostname." % plugip)
 			try:
-				ip = socket.gethostbyname(plugip)
+				plugip = socket.gethostbyname(plugip)
 				self._wemoswitch_logger.debug("Hostname %s is valid." % plugip)
 			except (socket.herror, socket.gaierror):
 				self._wemoswitch_logger.debug("Invalid hostname %s." % plugip)
