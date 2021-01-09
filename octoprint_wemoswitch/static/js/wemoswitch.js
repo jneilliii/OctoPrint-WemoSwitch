@@ -138,6 +138,7 @@ $(function() {
 		}
 
 		self.editPlug = function(data) {
+		    self.selected_discovered_device(undefined);
 			self.selectedPlug(data);
 			$("#WemoSwitchEditor").modal("show");
 		}
@@ -152,7 +153,7 @@ $(function() {
 		self.addPlug = function() {
 			self.selectedPlug({'ip':ko.observable(''),
                                 'label':ko.observable(''),
-                                'icon':ko.observable('fas fa-bolt'),
+                                'icon':ko.observable('icon-bolt'),
                                 'displayWarning':ko.observable(true),
                                 'warnPrinting':ko.observable(false),
                                 'thermal_runaway':ko.observable(false),
@@ -175,6 +176,7 @@ $(function() {
                                 'event_on_startup':ko.observable(false),
                                 'event_on_upload':ko.observable(false)});
 			self.settings.settings.plugins.wemoswitch.arrSmartplugs.push(self.selectedPlug());
+			self.selected_discovered_device(undefined);
 			$("#WemoSwitchEditor").modal("show");
 		}
 

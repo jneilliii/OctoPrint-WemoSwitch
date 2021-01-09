@@ -124,6 +124,11 @@
 	</div>
 	<div class="modal-body">
 		<table class="table table-condensed">
+            <tr data-bind="if: $root.discovering_devices() && $root.discovered_devices().length == 0">
+                <td colspan="3">
+                    <div class="row-fluid">Trying to discover devices on the network.</div>
+                </td>
+            </tr>
             <tr data-bind="if: !$root.discovering_devices() && $root.discovered_devices().length > 0">
                 <td colspan="3">
                     <div class="controls">
@@ -131,7 +136,7 @@
                     </div>
                 </td>
             </tr>
-            <tr data-bind="if: $root.discovered_devices().length == 0">
+            <tr data-bind="if: !$root.discovering_devices() && $root.discovered_devices().length == 0">
                 <td colspan="3">
                     <div class="row-fluid">No devices discovered on network, manually enter details below.</div>
                 </td>
