@@ -111,15 +111,6 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 	def on_after_startup(self):
 		self._logger.info("WemoSwitch loaded!")
 
-		self._logger.debug("Discovering devices")
-		self.discovered_devices = pywemo.discover_devices()
-
-		if self.discovered_devices:
-			for d in self.get_discovered_devices():
-				self._wemoswitch_logger.debug("Device %s: %s" % d)
-		else:
-			self._wemoswitch_logger.debug("No discovered devices on network")
-
 		self.abortTimeout = self._settings.get_int(["abortTimeout"])
 		self._wemoswitch_logger.debug("abortTimeout: %s" % self.abortTimeout)
 
@@ -148,6 +139,8 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 				"sn": tmp_ret.serialnumber}
 
 	def get_discovered_devices(self):
+		self._wemoswitch_logger.debug("Discovering devices")
+		self.discovered_devices = pywemo.discover_devices()
 		tmp_ret = []
 		for index in range(len(self.discovered_devices)):
 			d = self.get_discovered_device(index)
@@ -171,16 +164,6 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			event_on_upload_monitoring=False,
 			event_on_startup_monitoring=False
 		)
-
-	def on_settings_load(self):
-		data = {}
-		for key in self.get_settings_defaults():
-			data[key] = self._settings.get([key])
-		if "discovered_devices" in data:
-			del data["discovered_devices"]
-
-		data["discovered_devices"] = self.get_discovered_devices()
-		return data
 
 	def on_settings_save(self, data):
 		old_debug_logging = self._settings.get_boolean(["debug_logging"])
@@ -310,6 +293,13 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 					enableAutomaticShutdown=[],
 					disableAutomaticShutdown=[],
 					abortAutomaticShutdown=[])
+
+	def on_api_get(self, request):
+		if not Permissions.PLUGIN_WEMOSWITCH_CONTROL.can():
+			return flask.make_response("Insufficient rights", 403)
+
+		if request.args.get("discover_devices"):
+			return flask.jsonify({"discovered_devices": self.get_discovered_devices()})
 
 	def on_api_command(self, command, data):
 		if not Permissions.PLUGIN_WEMOSWITCH_CONTROL.can():
