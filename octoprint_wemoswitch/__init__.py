@@ -556,7 +556,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 		port = None
 		try:
 			if ':' in plugip:
-				plugip, port = plugip.split(':', maxsplit=1)
+				plugip, port = plugip.split(':', 1)
 				port = int(port)
 			socket.inet_aton(plugip)
 			self._wemoswitch_logger.debug("IP %s is valid." % plugip)
