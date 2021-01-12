@@ -14,6 +14,8 @@ $(function() {
 		self.arrSmartplugs = ko.observableArray();
 		self.isPrinting = ko.observable(false);
 		self.selectedPlug = ko.observable();
+		self.discovered_devices = ko.observableArray([]);
+		self.discovering_devices = ko.observableArray([]);
 		self.selected_discovered_device = ko.observable();
 		self.processing = ko.observableArray([]);
 		self.powerOffWhenIdle = ko.observable(false);
@@ -110,6 +112,15 @@ $(function() {
 			self.checkStatuses();
 		}
 
+		self.onSettingsShown = function() {
+            self.discovering_devices(true);
+            console.log("wemoswitch plugin discovering devices");
+            OctoPrint.simpleApiGet('wemoswitch', {data: {discover_devices:true}}).done(function(response){
+                self.discovered_devices(response["discovered_devices"]);
+                self.discovering_devices(false);
+            });
+        }
+
         self.onEventSettingsUpdated = function(payload) {
 			self.arrSmartplugs(self.settings.settings.plugins.wemoswitch.arrSmartplugs());
 		}
@@ -127,21 +138,22 @@ $(function() {
 		}
 
 		self.editPlug = function(data) {
+		    self.selected_discovered_device(undefined);
 			self.selectedPlug(data);
 			$("#WemoSwitchEditor").modal("show");
 		}
 
 		self.use_discovered = function(data) {
 		    if(self.selected_discovered_device()) {
-                data.ip(self.selected_discovered_device().ip());
-                data.label(self.selected_discovered_device().label());
+                data.ip(self.selected_discovered_device().ip);
+                data.label(self.selected_discovered_device().label);
             }
         }
 
 		self.addPlug = function() {
 			self.selectedPlug({'ip':ko.observable(''),
                                 'label':ko.observable(''),
-                                'icon':ko.observable('fas fa-bolt'),
+                                'icon':ko.observable('icon-bolt'),
                                 'displayWarning':ko.observable(true),
                                 'warnPrinting':ko.observable(false),
                                 'thermal_runaway':ko.observable(false),
@@ -164,6 +176,7 @@ $(function() {
                                 'event_on_startup':ko.observable(false),
                                 'event_on_upload':ko.observable(false)});
 			self.settings.settings.plugins.wemoswitch.arrSmartplugs.push(self.selectedPlug());
+			self.selected_discovered_device(undefined);
 			$("#WemoSwitchEditor").modal("show");
 		}
 

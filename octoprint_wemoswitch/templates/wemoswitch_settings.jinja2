@@ -124,11 +124,21 @@
 	</div>
 	<div class="modal-body">
 		<table class="table table-condensed">
-            <tr>
+            <tr data-bind="if: $root.discovering_devices() && $root.discovered_devices().length == 0">
+                <td colspan="3">
+                    <div class="row-fluid">Trying to discover devices on the network.</div>
+                </td>
+            </tr>
+            <tr data-bind="if: !$root.discovering_devices() && $root.discovered_devices().length > 0">
                 <td colspan="3">
                     <div class="controls">
-                        <select class="input-block-level" data-bind="options: $root.settings.settings.plugins.wemoswitch.discovered_devices, optionsText: function(item){return item.label() + ' (' + item.ip() + ') SN: ' + item.sn()}, optionsCaption: gettext('Choose Discovered Device or Manually Enter Details Below...'), value: $root.selected_discovered_device, event: {change: $root.use_discovered}"></select>
+                        <select class="input-block-level" data-bind="options: $root.discovered_devices, optionsText: function(item){return item.label + ' (' + item.ip + ') SN: ' + item.sn}, optionsCaption: gettext('Choose Discovered Device...'), value: $root.selected_discovered_device, event: {change: $root.use_discovered}"></select>
                     </div>
+                </td>
+            </tr>
+            <tr data-bind="if: !$root.discovering_devices() && $root.discovered_devices().length == 0">
+                <td colspan="3">
+                    <div class="row-fluid">No devices discovered on network, manually enter details below.</div>
                 </td>
             </tr>
 			<tr>
