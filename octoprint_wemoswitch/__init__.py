@@ -14,6 +14,7 @@ import re
 import threading
 import time
 import pywemo
+from uptime import uptime
 
 try:
 	from octoprint.util import ResettableTimer
@@ -424,6 +425,12 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			return
 
 		if self._printer.is_printing() or self._printer.is_paused():
+			return
+
+		if (uptime() / 60) <= (self._settings.get_int(["idleTimeout"])):
+			self._wemoswitch_logger.debug("Just booted so wait for time sync.")
+			self._wemoswitch_logger.debug("uptime: {}, comparison: {}".format((uptime() / 60), (self._settings.get_int(["idleTimeout"]))))
+			self._reset_idle_timer()
 			return
 
 		self._wemoswitch_logger.debug("Idle timeout reached after %s minute(s). Waiting for hot end to cool prior to powering off plugs." % self.idleTimeout)
