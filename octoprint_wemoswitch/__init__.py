@@ -14,6 +14,7 @@ import re
 import threading
 import time
 import pywemo
+from octoprint.util.version import is_octoprint_compatible
 from uptime import uptime
 
 try:
@@ -227,10 +228,19 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ AssetPlugin mixin
 
 	def get_assets(self):
-		return dict(
-			js=["js/jquery-ui.min.js", "js/knockout-sortable.1.2.0.js", "js/fontawesome-iconpicker.js", "js/ko.iconpicker.js", "js/wemoswitch.js"],
-			css=["css/font-awesome.min.css", "css/font-awesome-v4-shims.min.css", "css/fontawesome-iconpicker.css", "css/wemoswitch.css"]
-		)
+		css = ["css/fontawesome-iconpicker.css",
+			   "css/tplinksmartplug.css",
+			   ]
+
+		if not is_octoprint_compatible(">=1.5.0"):
+			css += [
+				"css/font-awesome.min.css",
+				"css/font-awesome-v4-shims.min.css",
+			]
+
+		return {'js': ["js/jquery-ui.min.js", "js/knockout-sortable.1.2.0.js", "js/fontawesome-iconpicker.js",
+					   "js/ko.iconpicker.js", "js/wemoswitch.js"],
+				'css': css}
 
 	##~~ TemplatePlugin mixin
 
@@ -374,7 +384,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			self._timelapse_active = False
 
 		# File Uploaded Event
-		if event == Events.UPLOAD and self._settings.getBoolean(["event_on_upload_monitoring"]):
+		if event == Events.UPLOAD and self._settings.get_boolean(["event_on_upload_monitoring"]):
 			if payload.get("print", False): # implemented in OctoPrint version 1.4.1
 				self._wemoswitch_logger.debug("File uploaded: %s. Turning enabled plugs on." % payload.get("name", ""))
 				self._wemoswitch_logger.debug(payload)
