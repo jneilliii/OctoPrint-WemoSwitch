@@ -42,7 +42,7 @@ Once installed go into settings and enter the name of your wemo device. Adjust a
 - **Thermal Runaway**: when enabled will power off wemo when main temperature thresholds are exceeded.
 - **Auto Connect**: power on wemo and then automatically connect to printer after configured delay in seconds.
 - **Auto Disconnect**: automatically disconnect printer and then power off the wemo after configured delay in seconds.
-- **GCODE Trigger**: enable the processing of `M80`, `M81`, `@WEMOON`, and `@WEMOOFF` GCODE commands using configured delays. Syntax for gcode command is `M80`/`M81`/`@WEMOON`/`@WEMOOFF` followed by the wemo's ip address.  For example if your wemo's IP address is `192.168.0.104` your gcode command might be **@WEMOOFF 192.168.0.104**.
+- **GCODE Trigger**: enable the processing of `M80`, `M81`, `@WEMOON`, and `@WEMOOFF` GCODE commands using configured delays. Syntax for gcode command is `M80`/`M81`/`@WEMOON`/`@WEMOOFF` followed by the wemo's ip address.  For example if your wemo's IP address is `192.168.0.104` your gcode command might be **@WEMOOFF 192.168.0.104:49153**.
 - **Run System Command After On**: power on wemo and run configured system command after configured delay in seconds.
 - **Run System Command Before Off**: run configured system command and then power off the wemo after configured delay in seconds.
 
