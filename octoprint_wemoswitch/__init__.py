@@ -14,6 +14,8 @@ import re
 import threading
 import time
 import pywemo
+from octoprint.util.version import is_octoprint_compatible
+from uptime import uptime
 
 try:
 	from octoprint.util import ResettableTimer
@@ -226,10 +228,19 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ AssetPlugin mixin
 
 	def get_assets(self):
-		return dict(
-			js=["js/jquery-ui.min.js", "js/knockout-sortable.1.2.0.js", "js/fontawesome-iconpicker.js", "js/ko.iconpicker.js", "js/wemoswitch.js"],
-			css=["css/font-awesome.min.css", "css/font-awesome-v4-shims.min.css", "css/fontawesome-iconpicker.css", "css/wemoswitch.css"]
-		)
+		css = ["css/fontawesome-iconpicker.css",
+			   "css/tplinksmartplug.css",
+			   ]
+
+		if not is_octoprint_compatible(">=1.5.0"):
+			css += [
+				"css/font-awesome.min.css",
+				"css/font-awesome-v4-shims.min.css",
+			]
+
+		return {'js': ["js/jquery-ui.min.js", "js/knockout-sortable.1.2.0.js", "js/fontawesome-iconpicker.js",
+					   "js/ko.iconpicker.js", "js/wemoswitch.js"],
+				'css': css}
 
 	##~~ TemplatePlugin mixin
 
@@ -373,7 +384,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			self._timelapse_active = False
 
 		# File Uploaded Event
-		if event == Events.UPLOAD and self._settings.getBoolean(["event_on_upload_monitoring"]):
+		if event == Events.UPLOAD and self._settings.get_boolean(["event_on_upload_monitoring"]):
 			if payload.get("print", False): # implemented in OctoPrint version 1.4.1
 				self._wemoswitch_logger.debug("File uploaded: %s. Turning enabled plugs on." % payload.get("name", ""))
 				self._wemoswitch_logger.debug(payload)
@@ -424,6 +435,12 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			return
 
 		if self._printer.is_printing() or self._printer.is_paused():
+			return
+
+		if (uptime() / 60) <= (self._settings.get_int(["idleTimeout"])):
+			self._wemoswitch_logger.debug("Just booted so wait for time sync.")
+			self._wemoswitch_logger.debug("uptime: {}, comparison: {}".format((uptime() / 60), (self._settings.get_int(["idleTimeout"]))))
+			self._reset_idle_timer()
 			return
 
 		self._wemoswitch_logger.debug("Idle timeout reached after %s minute(s). Waiting for hot end to cool prior to powering off plugs." % self.idleTimeout)
