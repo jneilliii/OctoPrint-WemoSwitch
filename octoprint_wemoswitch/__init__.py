@@ -229,7 +229,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_assets(self):
 		css = ["css/fontawesome-iconpicker.css",
-			   "css/tplinksmartplug.css",
+			   "css/wemoswitch.css",
 			   ]
 
 		if not is_octoprint_compatible(">=1.5.0"):
