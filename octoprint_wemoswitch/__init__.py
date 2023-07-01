@@ -594,7 +594,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			url = 'http://%s:%s/setup.xml' % (plugip, port)
 			url = url.replace(':None', '')
 			self._wemoswitch_logger.debug("Getting device info from %s" % url)
-			device = pywemo.discovery.device_from_description(url, None)
+			device = pywemo.discovery.device_from_description(url)
 
 			self._wemoswitch_logger.debug("Found device %s" % device)
 			self._wemoswitch_logger.debug("Sending command %s to %s" % (cmd, plugip))
