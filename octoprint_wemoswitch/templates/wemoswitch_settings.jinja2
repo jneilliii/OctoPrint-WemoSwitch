@@ -101,6 +101,10 @@
                 <div class="input-append"><input type="number" min="0" class="input input-mini text-right" data-bind="value: settings.settings.plugins.wemoswitch.idleTimeoutWaitTemp" /><span class="add-on">{{ _('degs') }}</span></div>
             </div>
             <div class="controls">
+                <label class="control-label">{{ _('Heaters to Ignore for Idle') }}</label>
+                <input type="text" class="input-block-level" title="Comma separated list of heaters to ignore when checking temperatures" data-bind="value: settings.settings.plugins.wemoswitch.idleIgnoreHeaters" />
+            </div>
+            <div class="controls">
                 <label class="control-label">{{ _('GCode Commands to Ignore for Idle') }}</label>
                 <input type="text" class="input-block-level" title="Comma separated list of GCode commands" data-bind="value: settings.settings.plugins.wemoswitch.idleIgnoreCommands" />
             </div>

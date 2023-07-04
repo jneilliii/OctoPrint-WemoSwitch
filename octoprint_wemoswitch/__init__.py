@@ -150,22 +150,11 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 		return tmp_ret
 
 	def get_settings_defaults(self):
-		return dict(
-			debug_logging=False,
-			arrSmartplugs=[],
-			pollingInterval=15,
-			pollingEnabled=False,
-			thermal_runaway_monitoring=False,
-			thermal_runaway_max_bed=0,
-			thermal_runaway_max_extruder=0,
-			abortTimeout=30,
-			powerOffWhenIdle=False,
-			idleTimeout=30,
-			idleIgnoreCommands='M105',
-			idleTimeoutWaitTemp=50,
-			event_on_upload_monitoring=False,
-			event_on_startup_monitoring=False
-		)
+		return {'debug_logging': False, 'arrSmartplugs': [], 'pollingInterval': 15, 'pollingEnabled': False,
+				'thermal_runaway_monitoring': False, 'thermal_runaway_max_bed': 0, 'thermal_runaway_max_extruder': 0,
+				'abortTimeout': 30, 'powerOffWhenIdle': False, 'idleTimeout': 30, 'idleIgnoreHeaters': '',
+				'idleIgnoreCommands': 'M105', 'idleTimeoutWaitTemp': 50, 'event_on_upload_monitoring': False,
+				'event_on_startup_monitoring': False}
 
 	def on_settings_save(self, data):
 		old_debug_logging = self._settings.get_boolean(["debug_logging"])
@@ -473,10 +462,11 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 	def _wait_for_heaters(self):
 		self._waitForHeaters = True
 		heaters = self._printer.get_current_temperatures()
+		ignored_heaters = self._settings.get(["idleIgnoreHeaters"]).split(",")
 
 		for heater, entry in heaters.items():
 			target = entry.get("target")
-			if target is None:
+			if target is None or heater in ignored_heaters:
 				# heater doesn't exist in fw
 				continue
 
@@ -503,7 +493,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 			highest_temp = 0
 			heaters_above_waittemp = []
 			for heater, entry in heaters.items():
-				if not heater.startswith("tool"):
+				if not heater.startswith("tool") or heater in ignored_heaters:
 					continue
 
 				actual = entry.get("actual")
