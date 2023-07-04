@@ -138,7 +138,7 @@ class wemoswitchPlugin(octoprint.plugin.SettingsPlugin,
 		tmp_ret = self.discovered_devices[index]
 		return {"label": tmp_ret.name,
 				"ip": "{}:{}".format(tmp_ret.host, tmp_ret.port),
-				"sn": tmp_ret.serialnumber}
+				"sn": tmp_ret.serial_number}
 
 	def get_discovered_devices(self):
 		self._wemoswitch_logger.debug("Discovering devices")
