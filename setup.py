@@ -33,7 +33,7 @@ plugin_url = "https://github.com/jneilliii/OctoPrint-WemoSwitch"
 plugin_license = "AGPLv3"
 
 # Any additional requirements besides OctoPrint should be listed here
-plugin_requires = ["pywemo<1.0.0", "uptime"]
+plugin_requires = ["pywemo>=1.0.0", "uptime"]
 
 ### --------------------------------------------------------------------------------------------------------------------
 ### More advanced options that you usually shouldn't have to touch follow after this point
